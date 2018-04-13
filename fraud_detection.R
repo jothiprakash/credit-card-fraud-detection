@@ -13,10 +13,100 @@ library(ggplot2)
 library(lattice)
 library(corrplot)
 library(pROC)
-library(knitr)
 library(kableExtra)
 library(formattable)
 library(dplyr)
+library(Rtsne)
+library(data.table)
+library(magrittr)
+library(ggplot2) 
+library(plotly)
+library(ggthemes)
+
+
+# data preparation for visualization --------------------------------------
+
+## Clean and select data --------------------------------------------------
+
+data <- credit_data
+
+data %>%
+  mutate(id = 1:nrow(data)) %>%
+  mutate(Class = as.integer(Class))
+
+names(data) <- gsub('V', 'Feat', names(data))
+
+numeric_interesting_features <- c(paste0('Feat', 1:28),
+                                  'Amount') 
+
+# "Class", the target, is not used to compute the 2D coordinates
+
+data <- data[ apply(data, MARGIN = 1, FUN = function(x) !any(is.na(x))), ]
+
+
+# Create normalized dataset of features -----------------------------------
+
+df <- (as.data.frame(data[numeric_interesting_features]))
+
+# "Class", the target, is not used to compute the 2D coordinates
+
+df_normalised <- apply(df, 
+                       MARGIN = 2, 
+                       FUN = function(x) {
+                         scale(x, center = T, scale = T)
+                       } )
+df_normalised %<>%
+  as.data.frame() %>%
+  cbind(select(data, id))
+
+# Remove line with potential NA
+df_normalised <- df_normalised[ apply(df_normalised, MARGIN = 1, FUN = function(x) !any(is.na(x))), ]
+
+data_fraud <- df_normalised %>%
+  semi_join(filter(data, Class == 1), by = 'id')
+
+data_sub <- df_normalised %>%
+  sample_n(20000) %>% # sample of data
+  rbind(data_fraud)
+
+data_sub <- data_sub[!duplicated(select(data_sub, -id)), ]  
+# remove rows containing duplicate values within rounding
+
+
+# Run t-SNE to get the 2D coordinates -------------------------------------
+
+rtsne_out <- Rtsne(as.matrix(select(data_sub, -id)), pca = FALSE, verbose = TRUE,
+                   theta = 0.3, max_iter = 1300, Y_init = NULL)
+# "Class", the target, is not used to compute the 2D coordinates
+
+
+# Data post-processing ----------------------------------------------------
+
+# merge 2D coordinates with original features
+tsne_coord <- as.data.frame(rtsne_out$Y) %>%
+  cbind(select(data_sub, id)) %>%
+  left_join(data, by = 'id')
+
+
+# Plot the map and its hexagonal background -------------------------------
+
+gg <- ggplot() +
+  labs(title = "All Frauds (white dots) in the transaction landscape (10% of data)") +
+  scale_fill_gradient(low = 'darkblue', high = 'red', name="Proportion\nof fraud per\nhexagon") +
+  coord_fixed(ratio = 1) +
+  theme_void() +
+  stat_summary_hex(data = tsne_coord, aes(x = V1, y = V2, z = Class), bins=10, fun = mean, alpha = 0.9) +
+  geom_point(data = filter(tsne_coord, Class == 0), aes(x = V1, y = V2), alpha = 0.3, size = 1, col = 'black') +
+  geom_point(data = filter(tsne_coord, Class == 1), aes(x = V1, y = V2), alpha = 0.9, size = 0.3, col = 'white') +
+  theme(plot.title = element_text(hjust = 0.5, family = 'Calibri'),
+        legend.title.align = 0.5)
+
+gg
+#On about 10% of the data
+
+# The hexagons show the local density of fraudulent transactions (white points). 
+# Red colors mean high density of fraud (typically > 75% of points included in the hexagon) 
+# whereas blueish colors are associated with a small fraction of fraud. 
 
 
 # User defined functions --------------------------------------------------
