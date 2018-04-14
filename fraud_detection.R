@@ -5,23 +5,32 @@ credit_data <- read.csv(file = "data/raw/creditcard.csv")
 
 # import necessary libraries ----------------------------------------------
 
-library(randomForest)
-library(caret)
-library(gridExtra)
-library(grid)
-library(ggplot2)
-library(lattice)
-library(corrplot)
-library(pROC)
-library(kableExtra)
-library(formattable)
-library(dplyr)
-library(Rtsne)
-library(data.table)
-library(magrittr)
-library(ggplot2) 
-library(plotly)
-library(ggthemes)
+packages <- c("randomForest",
+              "caret",
+              "gridExtra",
+              "grid",
+              "ggplot2",
+              "lattice",
+              "corrplot",
+              "pROC",
+              "kableExtra",
+              "formattable",
+              "dplyr",
+              "Rtsne",
+              "data.table",
+              "magrittr",
+              "ggplot2",
+              "plotly",
+              "ggtheme")
+
+check.packages <- function(pkg) {
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg))
+    install.packages(new.pkg, dependencies = TRUE)
+  sapply(pkg, require, character.only = TRUE)
+}
+
+check.packages(packages)
 
 
 # data preparation for visualization --------------------------------------
