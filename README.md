@@ -11,3 +11,6 @@ Given the class imbalance ratio, we recommend measuring the accuracy using the A
 As the sensitive data is masked with PCA components, let's try to figure out under which component or amount the defaults happens the most.
 
 As it is PCA, visualizations are not easy. Let's reduce the dimensions to 2D using T-SNE and see how visuals look.
+Visuals with hexagon has been updated. So what is hexagon?
+
+The hexagons show the local density of fraudulent transactions (white points). Red colors mean high density of fraud (typically > 75% of points included in the hexagon) whereas blueish colors are associated with a small fraction of fraud. 
