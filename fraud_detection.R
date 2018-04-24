@@ -50,7 +50,9 @@ numeric_interesting_features <- c(paste0('Feat', 1:28),
 
 # "Class", the target, is not used to compute the 2D coordinates
 
-data <- data[ apply(data, MARGIN = 1, FUN = function(x) !any(is.na(x))), ]
+data <- data[ apply(data, 
+                    MARGIN = 1, 
+                    FUN = function(x) !any(is.na(x))), ]
 
 
 # Create normalized dataset of features -----------------------------------
@@ -63,7 +65,7 @@ df_normalised <- apply(df,
                        MARGIN = 2, 
                        FUN = function(x) {
                          scale(x, center = T, scale = T)
-                       } )
+                       })
 df_normalised %<>%
   as.data.frame() %>%
   cbind(select(data, id))
@@ -84,8 +86,12 @@ data_sub <- data_sub[!duplicated(select(data_sub, -id)), ]
 
 # Run t-SNE to get the 2D coordinates -------------------------------------
 
-rtsne_out <- Rtsne(as.matrix(select(data_sub, -id)), pca = FALSE, verbose = TRUE,
-                   theta = 0.3, max_iter = 1300, Y_init = NULL)
+rtsne_out <- Rtsne(as.matrix(select(data_sub, -id)), 
+                   pca = FALSE, 
+                   verbose = TRUE,
+                   theta = 0.3, 
+                   max_iter = 1300, 
+                   Y_init = NULL)
 # "Class", the target, is not used to compute the 2D coordinates
 
 
@@ -101,13 +107,28 @@ tsne_coord <- as.data.frame(rtsne_out$Y) %>%
 
 gg <- ggplot() +
   labs(title = "All Frauds (white dots) in the transaction landscape (10% of data)") +
-  scale_fill_gradient(low = 'darkblue', high = 'red', name="Proportion\nof fraud per\nhexagon") +
+  scale_fill_gradient(low = 'darkblue', 
+                      high = 'red', 
+                      name="Proportion\nof fraud per\nhexagon") +
   coord_fixed(ratio = 1) +
   theme_void() +
-  stat_summary_hex(data = tsne_coord, aes(x = V1, y = V2, z = Class), bins=10, fun = mean, alpha = 0.9) +
-  geom_point(data = filter(tsne_coord, Class == 0), aes(x = V1, y = V2), alpha = 0.3, size = 1, col = 'black') +
-  geom_point(data = filter(tsne_coord, Class == 1), aes(x = V1, y = V2), alpha = 0.9, size = 0.3, col = 'white') +
-  theme(plot.title = element_text(hjust = 0.5, family = 'Calibri'),
+  stat_summary_hex(data = tsne_coord, 
+                   aes(x = V1, y = V2, z = Class), 
+                   bins=10, 
+                   fun = mean, 
+                   alpha = 0.9) +
+  geom_point(data = filter(tsne_coord, Class == 0), 
+             aes(x = V1, y = V2), 
+             alpha = 0.3, 
+             size = 1, 
+             col = 'black') +
+  geom_point(data = filter(tsne_coord, Class == 1), 
+             aes(x = V1, y = V2), 
+             alpha = 0.9, 
+             size = 0.3, 
+             col = 'white') +
+  theme(plot.title = element_text(hjust = 0.5, 
+                                  family = 'Calibri'),
         legend.title.align = 0.5)
 
 gg
@@ -270,8 +291,12 @@ summary(credit_data)
 str(credit_data)
 
 head(credit_data, 10) %>%
-  kable( "html", escape=F, align="c") %>%
-  kable_styling(bootstrap_options = "striped", full_width = F, position = "center")
+  kable( "html", 
+         escape=F, 
+         align="c") %>%
+  kable_styling(bootstrap_options = "striped", 
+                full_width = F, 
+                position = "center")
 
 boxplot(credit_data$Amount)
 hist(credit_data$Amount)
@@ -329,8 +354,6 @@ trainset.rf <- randomForest(rf.form,
                             trainset, 
                             ntree = 100, 
                             importance = T)
-
-summary(trainset.rf)
 
 
 # visualizing the variable importance -------------------------------------
