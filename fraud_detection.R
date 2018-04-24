@@ -21,7 +21,7 @@ packages <- c("randomForest",
               "magrittr",
               "ggplot2",
               "plotly",
-              "ggtheme")
+              "ggthemes")
 
 check.packages <- function(pkg) {
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
@@ -329,6 +329,8 @@ trainset.rf <- randomForest(rf.form,
                             trainset, 
                             ntree = 100, 
                             importance = T)
+
+summary(trainset.rf)
 
 
 # visualizing the variable importance -------------------------------------
